@@ -17,14 +17,13 @@ output_csv_file_path = 'Output/CVs_Info_Extracted.csv'
 output_excel_file_path = 'Output/CVs_Info_Extracted.xlsx'
 
 class CVsInfoExtractor:
-    def __init__(self, cvs_df, openai_api_key):
+    def __init__(self, cvs_df):
         self.cvs_df = cvs_df
         
         with open('Engineered_Prompt/Prompt_New.txt', 'r') as file:
             self.prompt = file.read()
         
-        # Set the OpenAI API key from user input
-        openai.api_key = openai_api_key
+        openai.api_key = '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'
 
     def _call_gpt_for_cv_info_extraction(self, prompt, cv_content, model, temperature=0):
         completion_params = {
@@ -134,9 +133,6 @@ class CVExtractorApp:
         # Streamlit UI components
         st.title("CV Extractor")
 
-        # OpenAI API Key Input
-        self.openai_api_key = st.text_input("OpenAI API Key:", type="password")
-
         # CVs Directory Input
         self.cvs_directory_path = st.text_input("CVs Directory:")
 
@@ -167,7 +163,7 @@ class CVExtractorApp:
             "put the first sentence of the requirement here": "put its result here (PASS/FAIL)",
             ...
             "Overall result": "put overall result here (PASS/CONSIDER/FAIL)" 
-                                 
+                                
             Note that only return one status at a time (PASS or FAIL or CONSIDER), and don't return any other information. 
             The following is the provided document: 
             '{excel_docs}'. 
@@ -217,11 +213,6 @@ class CVExtractorApp:
 
     def start_extraction(self):
         cvs_directory_path = self.cvs_directory_path
-        openai_api_key = self.openai_api_key
-
-        if not openai_api_key:
-            st.error("OpenAI API Key is required.")
-            return
 
         if not os.path.exists(cvs_directory_path):
             st.error("The specified directory does not exist.")
@@ -240,8 +231,8 @@ class CVExtractorApp:
             st.error(f"Error reading CVs: {str(e)}")
             return
 
-        # Create an instance of CVsInfoExtractor with the provided OpenAI API key
-        cvs_info_extractor = CVsInfoExtractor(cvs_df=self.cvs_df, openai_api_key=openai_api_key)
+        # Create an instance of CVsInfoExtractor
+        cvs_info_extractor = CVsInfoExtractor(cvs_df=self.cvs_df)
 
         # Extract CV information
         try:
@@ -253,6 +244,7 @@ class CVExtractorApp:
 
         except Exception as e:
             st.error(f"Error during extraction: {str(e)}")
+
 
     def fetch_and_process_data(self):
         requires = self.requires_text.strip()
