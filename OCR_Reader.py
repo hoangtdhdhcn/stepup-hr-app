@@ -4,44 +4,63 @@ import pandas as pd
 from tqdm import tqdm
 
 
-# Define a class to read CVs from a directory
 class CVsReader:
     
-    # Initialize the class with the directory path where CVs are located
-    def __init__(self, cvs_directory_path):
+    def __init__(self, cvs_directory_path=None):
         self.cvs_directory_path = cvs_directory_path
 
+    # Method to read CV files from uploaded files
+    def read_cv_from_files(self, uploaded_files):
+        # Initialize a dictionary to hold the filenames and contents of the CVs
+        data = {'CV_Filename': [], 'CV_Content': []}
 
-    # Method to read new CV files from the given directory
-    def _read_new_directory_files(self):
+        # For each uploaded file
+        for uploaded_file in tqdm(uploaded_files, desc='Processing Uploaded CVs'):
+            # Ensure the file is a PDF
+            if uploaded_file.type == "application/pdf":
+                # Read the content of the PDF file
+                content = self._extract_text_from_pdf(uploaded_file)
+                # Add the filename and content to the dictionary
+                data['CV_Filename'].append(uploaded_file.name)
+                data['CV_Content'].append(content)
+            else:
+                print(f"File {uploaded_file.name} is not a PDF and will be skipped.")
+        
+        # Return the data as a DataFrame
+        return pd.DataFrame(data)
 
-        # Store the directory path of CVs
-        cvs_directory_path = self.cvs_directory_path
+    # Method to extract text from a PDF file
+    def _extract_text_from_pdf(self, uploaded_file):
+        # Print the name of the file being processed
+        print(f"Extracting text from file: {uploaded_file.name}")
 
-        # Store the path of the CSV file where previously extracted CVs are stored
-        previously_extracted_cvs_path = '../Output/CVs_Info_Extracted.csv'
+        # Create a PdfReader object
+        pdf = PdfReader(uploaded_file)
 
-        # Get a list of all files in the CVs directory
-        all_cvs = os.listdir(cvs_directory_path)
+        # Initialize an empty string to store the extracted text
+        text = ''
 
-        # If there is a CSV file of previously extracted CVs
-        if os.path.isfile(previously_extracted_cvs_path):
+        # Loop over the pages in the pdf
+        for page in range(len(pdf.pages)):
+            # Extract text from each page and append it to the text string
+            text += pdf.pages[page].extract_text()
 
-            # Read that file and get the filenames of CVs
-            previously_extracted_cvs = pd.read_csv(previously_extracted_cvs_path, usecols = ['CV_Filename'])
+        # Return the extracted text
+        return text
 
-            # Convert those filenames to a list
-            previously_extracted_cvs = previously_extracted_cvs.CV_Filename.to_list()
+    # Define a method that reads and cleans CVs from a directory
+    def read_cv(self):
+        print('---- Executing CVs Content Extraction Process ----')
 
-            # Filter out the CVs that have already been processed
-            all_cvs = [cv for cv in all_cvs if cv not in previously_extracted_cvs]
+        # Read the PDFs from the directory and store their content in a DataFrame
+        df = self._read_pdfs_content_from_directory(self.cvs_directory_path)
 
-        # Print the number of CVs that are left to be processed
-        print(f'Number of CVs to be processed: {len(all_cvs)}')
+        print('Cleaning CVs Content...')
+        df['CV_Content'] = df['CV_Content'].str.replace(r"\n(?:\s*)", "\n", regex=True)
 
-        # Return the list of CVs to be processed
-        return all_cvs
-
+        print('CVs Content Extraction Process Completed!')
+        print('----------------------------------------------')
+        return df
 
     # Method to extract text from a PDF file
     def _extract_text_from_pdf(self, pdf_path):
