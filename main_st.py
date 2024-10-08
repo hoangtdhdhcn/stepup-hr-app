@@ -23,7 +23,7 @@ class CVsInfoExtractor:
         with open('Engineered_Prompt/Prompt_New.txt', 'r') as file:
             self.prompt = file.read()
         
-        openai.api_key = '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'
+        openai.api_key = ''
 
     def _call_gpt_for_cv_info_extraction(self, prompt, cv_content, model, temperature=0):
         completion_params = {
@@ -56,7 +56,7 @@ class CVsInfoExtractor:
         else:
             df.to_csv(output_csv_file_path, mode='w', index=False)
 
-    def _gpt_pipeline(self, row, model='gpt-3.5-turbo'):
+    def _gpt_pipeline(self, row, model='gpt-4o-mini'):
         CV_Filename = row['CV_Filename']
         CV_Content = row['CV_Content']
         time.sleep(5)
