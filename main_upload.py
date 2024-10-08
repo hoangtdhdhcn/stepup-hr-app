@@ -105,6 +105,9 @@ class CVExtractorApp:
         # Streamlit UI components
         st.title("CV Extractor")
 
+        # OpenAI API Key Input
+        self.openai_api_key = st.text_input("Enter your OpenAI API Key", type="password")
+
         # CVs File Upload
         self.cvs_files = st.file_uploader("Upload CVs (PDF files)", type=["pdf"], accept_multiple_files=True)
 
@@ -228,7 +231,7 @@ class CVExtractorApp:
 
         # Read CVs from uploaded files
         try:
-            self.cvs_df = cvs_reader.read_cv_from_files(self.cvs_files)  # Update this method in CVsReader
+            self.cvs_df = cvs_reader.read_cv_from_files(self.cvs_files)  
         except Exception as e:
             st.error(f"Error reading CVs: {str(e)}")
             return
@@ -236,18 +239,19 @@ class CVExtractorApp:
         # Create an instance of CVsInfoExtractor
         cvs_info_extractor = CVsInfoExtractor(cvs_df=self.cvs_df)
 
+        # Set the OpenAI API key
+        openai.api_key = self.openai_api_key
+
         # Extract CV information
         try:
             extract_cv_info_dfs = cvs_info_extractor.extract_cv_info()
             st.success("Extraction completed successfully!")
 
             # Move processed CVs if necessary
-            # cvs_info_extractor.move_processed_cvs(cvs_directory_path)
             self.move_processed_files(self.cvs_files, "CV")
 
         except Exception as e:
             st.error(f"Error during extraction: {str(e)}")
-
 
     def fetch_and_process_data(self):
         requires = self.requires_text.strip()
