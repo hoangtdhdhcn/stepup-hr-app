@@ -23,7 +23,7 @@ class CVsInfoExtractor:
         with open('Engineered_Prompt/Prompt_New.txt', 'r') as file:
             self.prompt = file.read()
         
-        openai.api_key = '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'
+        openai.api_key = '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'
 
     def _call_gpt_for_cv_info_extraction(self, prompt, cv_content, model, temperature=0):
         completion_params = {
