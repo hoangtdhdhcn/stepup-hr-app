@@ -57,7 +57,7 @@ class CVsInfoExtractor:
         else:
             df.to_csv(output_csv_file_path, mode='w', index=False)
 
-    def _gpt_pipeline(self, row, model='gpt-3.5-turbo'):
+    def _gpt_pipeline(self, row, model='gpt-4o-mini'):
         CV_Filename = row['CV_Filename']
         CV_Content = row['CV_Content']
         time.sleep(5)
